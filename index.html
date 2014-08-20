@@ -4,10 +4,10 @@
 	<head>
 		<meta charset="utf-8">
 
-		<title>reveal.js - The HTML Presentation Framework</title>
+		<title>Async sequences and algorithms to compose them</title>
 
 		<meta name="description" content="A framework for easily creating beautiful presentations using HTML">
-		<meta name="author" content="Hakim El Hattab">
+		<meta name="author" content="Kirk Shoop">
 
 		<meta name="apple-mobile-web-app-capable" content="yes" />
 		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -18,7 +18,7 @@
 		<link rel="stylesheet" href="css/theme/default.css" id="theme">
 
 		<!-- For syntax highlighting -->
-		<link rel="stylesheet" href="lib/css/zenburn.css">
+		<link rel="stylesheet" href="plugin/highlight/styles/monokai_sublime.css">
 
 		<!-- If the query includes 'print-pdf', include the PDF print sheet -->
 		<script>
@@ -42,16 +42,373 @@
 
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
-				<section>
-					<h1>Reveal.js</h1>
-					<h3>HTML Presentations Made Easy</h3>
+				<section id="start">
+					<h1>Async sequences and algorithms</h1>
+					<h3>building usable async primitives</h3>
 					<p>
-						<small>Created by <a href="http://hakim.se">Hakim El Hattab</a> / <a href="http://twitter.com/hakimel">@hakimel</a></small>
+						<small>Created by Kirk Shoop / <a href="http://twitter.com/kirkshoop">@kirkshoop</a></small>
 					</p>
 				</section>
 
 				<section>
-					<h2>Heads Up</h2>
+					<section>
+						<h2>Demo</h2>
+						<p>Idea credit: David Sankel</p>
+						<p>Gui: OpenFrameworks</p>
+					</section>
+					<section>
+						<pre class="stretch highlight cpp">
+
+void step_one_setup(ofApp* app)
+{
+    auto orbit_points = app-><span class="fragment zoom-in highlight-current-green" data-fragment-index="4">orbitPointsFromTimeInPeriod</span>(
+        app-><span class="fragment zoom-in highlight-current-green" data-fragment-index="3">timeInPeriodFromMilliseconds</span>(
+            app-><span class="fragment zoom-in highlight-current-green" data-fragment-index="1">updates</span>.
+            	<span class="fragment zoom-in highlight-current-green" data-fragment-index="2">milliseconds</span>()));
+
+    auto location_points = app-><span class="fragment zoom-in highlight-current-green">mouse</span>.
+        <span class="fragment zoom-in highlight-current-green">moves</span>().
+        <span class="fragment zoom-in highlight-current-green">map(ofApp::pointFromMouse)</span>;
+    
+    <span class="fragment zoom-in highlight-current-green">location_points.
+        combine_latest(std::plus&lt;&gt;(), orbit_points)</span>.
+        subscribe(
+            [=](ofPoint c){
+                // update the point that the draw() call will use
+                app-><span class="fragment zoom-in highlight-current-green">center</span> = c;
+            });
+}
+						</pre>
+					</section>
+					
+					<section>
+						<h2>Orbit from Time</h2>
+						<pre class="stretch highlight cpp">
+<span class="fragment zoom-in highlight-current-green" data-fragment-index="3">rxcpp::observable&lt;float&gt;</span>
+ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">timeInPeriodFromMilliseconds</span>(
+    <span class="fragment zoom-in highlight-current-green" data-fragment-index="2">rxcpp::observable&lt;unsigned long long&gt;</span> timeInMilliseconds){
+    return timeInMilliseconds.
+        map(
+            [this](unsigned long long <span class="fragment zoom-in highlight-current-green" data-fragment-index="4">tick</span>){
+                // <span class="fragment zoom-in highlight-current-green" data-fragment-index="5">map the tick into the range 0.0-1.0</span>
+                return ofMap(tick % int(<span class="fragment zoom-in highlight-current-green" data-fragment-index="6">orbit_period</span> * 1000), 
+                    0, int(orbit_period * 1000), 0.0, 1.0);
+            });
+}
+
+<span class="fragment zoom-in highlight-current-green" data-fragment-index="9">rxcpp::observable&lt;ofPoint&gt;</span>
+ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-index="7">orbitPointsFromTimeInPeriod</span>(
+    <span class="fragment zoom-in highlight-current-green" data-fragment-index="8">rxcpp::observable&lt;float&gt;</span> timeInPeriod){
+    return timeInPeriod.
+        map(
+            [this](float <span class="fragment zoom-in highlight-current-green" data-fragment-index="10">t</span>){
+                // <span class="fragment zoom-in highlight-current-green" data-fragment-index="11">map the time value to a point on a circle</span>
+                return ofPoint(orbit_radius * std::<span class="fragment zoom-in highlight-current-green" data-fragment-index="12">cos</span>(t * 2 * 3.14), 
+                    orbit_radius * std::<span class="fragment zoom-in highlight-current-green" data-fragment-index="12">sin</span>(t * 2 * 3.14));
+            });
+}
+						</pre>
+					</section>
+				</section>
+
+				<section id="asyncvconcurrent">
+					<section>
+						<h2>Asynchronous vs Concurrent</h2>
+						<h3>Concurrent</h3>
+						<p>
+							one piece of work that can be fractured into smaller indepenent pieces.
+						</p>
+						<h3>Asynchronous</h3>
+						<p>
+							many pieces of work that are dependent and distributed over time.
+						</p>
+					</section>
+					<section>
+						<h2>Concurrent</h2>
+						<p>
+							The goal is to use all available resources to finish a piece of work quickly
+						</p>
+					</section>
+					<section>
+						<h2>Asynchronous</h2>
+						<p>
+							The goal is to use minimal resources coordinating between many pieces of work
+						</p>
+					</section>
+				</section>
+
+				<section id="review">
+					<section>
+						<h2>Review of Algorithm sets in C++</h2>
+					</section>
+					<section>
+						<h2>Value</h2>
+						<p>
+							<strong>Represenation:</strong> <code>int value;</code>
+						</p>
+						<p class="fragment">
+							<strong>Algorithms:</strong> the operators <code>=</code>, <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>&amp;</code>, <code>&amp;&amp;</code>, <code>|</code>, <code>||</code>, <code>~</code>, <code>switch</code>, <code>if</code> and <code>?:</code> are examples of algorithms for values.
+						</p>
+					</section>
+					<section>
+						<h2>Sequence</h2>
+						<p>
+							<strong>Represenation:</strong> <code>iterator begin, iterator end</code>
+						</p>
+						<p class="fragment">
+							<strong>Algorithms:</strong> <code>std::copy_if</code>, <code>std::transform</code>, <code>std::accumulate</code>, <code>std::rotate</code>, <code>std::sort</code>, <code>std::find</code>, <code>std::search</code> are examples of algorithms for sequences.
+						</p>
+					</section>
+					<section>
+						<h2>Range</h2>
+						<p>
+							This is under active development with more than one representation.
+							<br/><strong>Represenation:</strong> <code>[anonymous] range::begin, [anonymous] range::end</code> 
+						</p>
+						<p class="fragment">
+							<strong>Algorithms:</strong> <code>std::copy_if</code>, <code>std::transform</code>, <code>std::accumulate</code>, <code>std::rotate</code>, <code>std::sort</code>, <code>std::find</code>, <code>std::search</code> are algorithms for ranges - same as sequence but must all be rewritten for each new representation.
+						</p>
+					</section>
+					<section>
+						<h2>Parallel Sequence (Concurrent)</h2>
+						<p>
+							<strong>Represenation:</strong> <code>[integral] start, [integral] end</code> 
+						</p>
+						<p class="fragment">
+							<strong>Algorithms:</strong> <code>parallel_for</code>, <code>parallel_transform</code>, <code>parallel_reduce</code>, <code>parallel_sort</code> are algorithms for operating on partitioned indicies in parallel.
+						</p>
+					</section>
+					<section>
+						<h2>Asynchronous Value</h2>
+						<p>
+							<strong>Represenation:</strong> <code>std::promise&lt;T&gt; produce; std::future&lt;T&gt; consume;</code>
+						</p>
+						<p class="fragment">
+							<strong>Proposed Algorithms:</strong> <code>then</code>, <code>when_all</code>, <code>when_any</code>, <code>map</code>, <code>bind</code>, <code>catch_error</code> are algorithms for Asynchronous Values.
+						</p>
+					</section>
+					<section>
+						<h2>Asynchronous Sequence</h2>
+						<p>
+							<strong>Represenation:</strong> <code>observable&lt;T&gt; produce; subscriber&lt;T&gt; consume;</code>
+						</p>
+						<p class="fragment">
+							<strong>Algorithms:</strong> <code>filter</code>, <code>map</code>, <code>reduce</code>, <code>group_by</code>, <code>flat_map</code>, <code>concat</code>, <code>merge</code>, <code>skip</code>, <code>take</code>, <code>buffer</code>, <code>window</code>, <code>combine_latest</code> are algorithms for Asyncronous Sequences.
+						</p>
+					</section>
+				</section>
+
+				<section id="sequencesintime">
+					<section>
+						<h2>Time Indexed Sequences of &lt;T&gt;</h2>
+						<h3>(Streams)</h3>
+						<ul>
+							<li>Periodic Timer</li>
+							<li class="fragment">Mouse Clicks</li>
+							<li class="fragment">Mouse Moves</li>
+							<li class="fragment">Network Packets</li>
+							<li class="fragment">File Reads/Writes</li>
+						</ul>
+
+						<aside class="notes">
+						</aside>
+					</section>
+					<section>
+						<h2>Async results are rarely a single value</h2>
+						<p>Photo Credit: <a href="https://www.flickr.com/photos/13912353@N00/2375245079/">Carlos Caicedo</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
+						<img class="stretch" src="lib/image/2375245079_71f4545ea9_o.jpg" > </img>
+						<aside class="notes">
+						</aside>
+					</section>
+					<section>
+						<h2>Streams are not always Bytes</h2>
+						<p>Photo Credit: <a href="https://www.flickr.com/photos/44124372247@N01/182799169/">jeffk</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
+						<img class="stretch" width="400" src="lib/image/182799169_0cf5f561c1_o.jpg" > </img>
+						<aside class="notes">
+						</aside>
+					</section>
+				</section>
+
+				<section>
+					<h2>Step 4</h2>
+					<pre class="stretch" data-trim><code>
+#pragma once
+
+void step_four_setup(ofApp* app)
+{
+    auto window_center = rx::observable<>::
+        defer(
+            [](){
+                return rx::observable<>::
+                    just(ofPoint(ofGetWidth()/2, ofGetHeight()/2));
+            }).
+        as_dynamic(); 
+
+    auto all_movement = rx::observable<>::
+        from(app->mouse.moves(), app->mouse.drags()).
+        merge().
+        map(ofApp::pointFromMouse).
+        as_dynamic();
+    
+    auto just_moves = app->mouse.
+        moves().
+        map(ofApp::pointFromMouse).
+        as_dynamic();
+    
+    auto just_drags = app->mouse.
+        drags().
+        map(ofApp::pointFromMouse).
+        as_dynamic();
+    
+    auto never = rx::observable<>::
+        never<ofPoint>().
+        as_dynamic();
+
+    auto sources = rx::util::to_vector({window_center, all_movement, just_moves, just_drags, never});
+    auto sourcesText = std::vector<std::string>({"window_center", "all_movement", "just_moves", "just_drags", "never"});
+
+    app->gui.add(app->show_circle.setup("circle", true));
+    app->gui.add(app->orbit_circle.setup("circle orbits", true));
+    app->gui.add(app->circle_radius.setup("circle radius", 20.0, 10.0, 600.0));
+    app->gui.add(app->orbit_radius.setup("orbit radius", 50.0, 10.0, 600.0));
+    app->gui.add(app->orbit_period.setup("orbit period", 1.0, 0.5, 5.0));
+    app->gui.add(app->selected.setup("select source", 0, 0, sourcesText.size() - 1));
+    app->gui.add(app->selectedText.setup("selected source", ""));
+
+    auto orbit_points = app->orbits.setup(app->orbit_circle).
+        distinct_until_changed().
+        start_with(true).
+        map(
+            [=](bool orbits){
+                if (orbits) {
+                    return app->orbitPointsFromTimeInPeriod(
+                        app->timeInPeriodFromMilliseconds(
+                            app->updates.milliseconds())).
+                        as_dynamic();
+                } else {
+                    return rxcpp::observable<>::
+                        just(ofPoint(0,0)).
+                        as_dynamic();
+                }
+            }).
+        switch_on_next();
+    
+    auto location_points = app->selections.setup(app->selected).
+        distinct_until_changed().
+        start_with(0).
+        map(
+            [=](int locationSource){
+                app->selectedText = sourcesText[app->selected % sourcesText.size()];
+                return sources[app->selected % sources.size()];
+            }).
+        switch_on_next().
+        start_with(ofPoint(ofGetWidth()/2, ofGetHeight()/2));
+    
+    location_points.
+        combine_latest(std::plus<ofPoint>(), orbit_points).
+        subscribe(
+            [=](ofPoint c){
+                // update the point that the draw() call will use
+                app->center = c;
+            });
+}
+		
+					</code></pre>
+				</section>
+
+				<section data-markdown>
+				    <script type="text/template">
+Step 4
+------
+
+```cpp
+
+#pragma once
+
+void step_four_setup(ofApp* app)
+{
+    auto window_center = rx::observable<>::
+        defer(
+            [](){
+                return rx::observable<>::
+                    just(ofPoint(ofGetWidth()/2, ofGetHeight()/2));
+            }).
+        as_dynamic(); 
+
+    auto all_movement = rx::observable<>::
+        from(app->mouse.moves(), app->mouse.drags()).
+        merge().
+        map(ofApp::pointFromMouse).
+        as_dynamic();
+    
+    auto just_moves = app->mouse.
+        moves().
+        map(ofApp::pointFromMouse).
+        as_dynamic();
+    
+    auto just_drags = app->mouse.
+        drags().
+        map(ofApp::pointFromMouse).
+        as_dynamic();
+    
+    auto never = rx::observable<>::
+        never<ofPoint>().
+        as_dynamic();
+
+    auto sources = rx::util::to_vector({window_center, all_movement, just_moves, just_drags, never});
+    auto sourcesText = std::vector<std::string>({"window_center", "all_movement", "just_moves", "just_drags", "never"});
+
+    app->gui.add(app->show_circle.setup("circle", true));
+    app->gui.add(app->orbit_circle.setup("circle orbits", true));
+    app->gui.add(app->circle_radius.setup("circle radius", 20.0, 10.0, 600.0));
+    app->gui.add(app->orbit_radius.setup("orbit radius", 50.0, 10.0, 600.0));
+    app->gui.add(app->orbit_period.setup("orbit period", 1.0, 0.5, 5.0));
+    app->gui.add(app->selected.setup("select source", 0, 0, sourcesText.size() - 1));
+    app->gui.add(app->selectedText.setup("selected source", ""));
+
+    auto orbit_points = app->orbits.setup(app->orbit_circle).
+        distinct_until_changed().
+        start_with(true).
+        map(
+            [=](bool orbits){
+                if (orbits) {
+                    return app->orbitPointsFromTimeInPeriod(
+                        app->timeInPeriodFromMilliseconds(
+                            app->updates.milliseconds())).
+                        as_dynamic();
+                } else {
+                    return rxcpp::observable<>::
+                        just(ofPoint(0,0)).
+                        as_dynamic();
+                }
+            }).
+        switch_on_next();
+    
+    auto location_points = app->selections.setup(app->selected).
+        distinct_until_changed().
+        start_with(0).
+        map(
+            [=](int locationSource){
+                app->selectedText = sourcesText[app->selected % sourcesText.size()];
+                return sources[app->selected % sources.size()];
+            }).
+        switch_on_next().
+        start_with(ofPoint(ofGetWidth()/2, ofGetHeight()/2));
+    
+    location_points.
+        combine_latest(std::plus<ofPoint>(), orbit_points).
+        subscribe(
+            [=](ofPoint c){
+                // update the point that the draw() call will use
+                app->center = c;
+            });
+}
+```
+				    </script>
+				</section>
+
+				<section>
+					<h2>Primitives for async programming</h2>
 					<p>
 						reveal.js is a framework for easily creating beautiful presentations using HTML. You'll need a browser with
 						support for CSS 3D transforms to see it in its full glory.
@@ -322,14 +679,14 @@ function linkify( selector ) {
 					</a>
 				</section>
 
-				<section>
+				<!--section>
 					<h2>Export to PDF</h2>
 					<p>Presentations can be <a href="https://github.com/hakimel/reveal.js#pdf-export">exported to PDF</a>, below is an example that's been uploaded to SlideShare.</p>
 					<iframe id="slideshare" src="http://www.slideshare.net/slideshow/embed_code/13872948" width="455" height="356" style="margin:0;overflow:hidden;border:1px solid #CCC;border-width:1px 1px 0;margin-bottom:5px" allowfullscreen> </iframe>
 					<script>
 						document.getElementById('slideshare').attributeName = 'allowfullscreen';
 					</script>
-				</section>
+				</section-->
 
 				<section>
 					<h2>Take a Moment</h2>
@@ -382,7 +739,11 @@ function linkify( selector ) {
 					{ src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
 					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
-					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+					{ src: 'plugin/highlight/highlight.pack.js', async: true, callback: function() { 
+						[].forEach.call( document.querySelectorAll( '.highlight' ), function( v, i) {
+						  hljs.highlightBlock(v);
+						});
+					} },
 					{ src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
 					{ src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
 				]
