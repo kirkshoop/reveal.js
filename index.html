@@ -50,14 +50,17 @@
 					</p>
 				</section>
 
-				<section>
+				<section id="demointro">
 					<section>
 						<h2>Demo</h2>
-						<p>Idea credit: David Sankel</p>
-						<p>Gui: OpenFrameworks</p>
+						<p>Idea credit: David Sankel's
+						<a href="https://github.com/boostcon/cppnow_presentations_2014/blob/master/files/Functional-Reactive-Programming.pdf">cppnow2014 presentation</a></p>
+						<p>Gui: <a href="https://github.com/openFrameworks-cpp11/openFrameworks">OpenFrameworks for C++11</a></p>
+						<p> Code: <a href="https://github.com/kirkshoop/ofxRx">on github</a></p>
 					</section>
 					<section>
-						<pre class="stretch highlight cpp">
+						<h2>Combine Time and Movement</h2>
+						<pre class="stretch highlight">
 
 void step_one_setup(ofApp* app)
 {
@@ -80,10 +83,10 @@ void step_one_setup(ofApp* app)
 }
 						</pre>
 					</section>
-					
+
 					<section>
 						<h2>Orbit from Time</h2>
-						<pre class="stretch highlight cpp">
+						<pre class="stretch highlight">
 <span class="fragment zoom-in highlight-current-green" data-fragment-index="3">rxcpp::observable&lt;float&gt;</span>
 ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">timeInPeriodFromMilliseconds</span>(
     <span class="fragment zoom-in highlight-current-green" data-fragment-index="2">rxcpp::observable&lt;unsigned long long&gt;</span> timeInMilliseconds){
@@ -108,6 +111,79 @@ ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-inde
             });
 }
 						</pre>
+					</section>
+				</section>
+
+				<section id="rx">
+					<section>
+						<h2>Rx - Reactive Extensions</h2>
+						<p></p>
+					</section>
+					<section>
+						<h2>Origin</h2>
+						<ul>
+						<li class="fragment grow highlight-current-green">Rx originated as Rx.Net</li>
+						<li class="fragment grow highlight-current-green">Rx.Net followed LINQ.</li>
+						</ul>
+					</section>
+					<section>
+						<h2>LINQ</h2>
+						<ul>
+						<li class="fragment grow highlight-current-green">Set of algorithms for <code>IEnumerable</code></li>
+						<li class="fragment grow highlight-current-green">Equivalent to range efforts for C++</li>
+						<li class="fragment grow highlight-current-green">Names from SQL syntax</li>
+						</ul>
+						<pre class="highlight">
+List&lt;string&gt; fruits =
+    new List&lt;string&gt; { &quot;apple&quot;, &quot;passionfruit&quot;, &quot;banana&quot;, &quot;mango&quot;, 
+                    &quot;orange&quot;, &quot;blueberry&quot;, &quot;grape&quot;, &quot;strawberry&quot; };
+
+IEnumerable&lt;string&gt; query = fruits.<span class="fragment zoom-in highlight-current-green">Where</span>(fruit =&gt; fruit.Length &lt; 6);
+
+IEnumerable&lt;int&gt; squares =
+    Enumerable.Range(1, 10).<span class="fragment zoom-in highlight-current-green">Select</span>(x =&gt; x * x);
+			            </pre>
+					</section>
+					<section>
+						<h2>Rx is LINQ inverted</h2>
+						<p>LINQ (Pull)</p>
+						<pre class="highlight">
+// GetEnumerator starts an independent in-order traversal of the source
+IEnumerator&lt;T&gt; IEnumerable&lt;T&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">GetEnumerator</span>();
+	void IEnumerator&lt;T&gt;::IDisposable::<span class="fragment zoom-in highlight-current-green" data-fragment-index="2">Dispose</span>(); // cancelation
+	<span class="fragment zoom-in highlight-current-green" data-fragment-index="3">bool</span> IEnumerator&lt;T&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">MoveNext</span>(); <span class="fragment zoom-in highlight-current-green" data-fragment-index="3">// false for complete</span>
+	T    IEnumerator&lt;T&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="4">Current</span>; <span class="fragment zoom-in highlight-current-green" data-fragment-index="5">// throws for error</span>
+						</pre>
+						<p>Rx (Push)</p>
+						<pre class="highlight">
+// Subscribe inverts GetEnumerator and MoveNext
+IDisposable IObservable&lt;T&gt;::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="1">Subscribe</span>(Observer&lt;T&gt;); 
+	void IDisposable::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="2">Dispose</span>(); // cancelation
+	Observer&lt;T&gt;::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="3">OnComplete</span>(); // inverts MoveNext return value
+	Observer&lt;T&gt;::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="4">OnNext</span>(T); // inverts Current
+	Observer&lt;T&gt;::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="5">OnError</span>(Exception); // inverts throw
+			            </pre>
+					</section>
+					<section>
+						<h2>Languages</h2>
+						<ul>
+						<li class="fragment grow highlight-current-green">Rx.Net</li>
+						<li class="fragment grow highlight-current-green">RxJs</li>
+						<li class="fragment grow highlight-current-green">RxJava</li>
+						<li class="fragment grow highlight-current-green">ReactiveCocoa, RxSwift</li>
+						<li class="fragment grow highlight-current-green">RxPy</li>
+						<li class="fragment grow highlight-current-green">RxGo</li>
+						<li class="fragment grow highlight-current-green">...</li>
+						<br/>
+						<li class="fragment grow highlight-current-red">Rxcpp</li>
+						</ul>
+					</section>
+				</section>
+
+				<section id="time">
+					<section>
+						<h2>Time</h2>
+						<p></p>
 					</section>
 				</section>
 
@@ -144,56 +220,74 @@ ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-inde
 					<section>
 						<h2>Value</h2>
 						<p>
-							<strong>Represenation:</strong> <code>int value;</code>
+							<strong>Represenation:</strong> <code class="highlight">[type] value;</code>
 						</p>
+						<br/>
 						<p class="fragment">
-							<strong>Algorithms:</strong> the operators <code>=</code>, <code>+</code>, <code>-</code>, <code>*</code>, <code>/</code>, <code>&amp;</code>, <code>&amp;&amp;</code>, <code>|</code>, <code>||</code>, <code>~</code>, <code>switch</code>, <code>if</code> and <code>?:</code> are examples of algorithms for values.
+							<strong>Algorithms:</strong> 
+							<br/>operators like <code class="highlight">+, -, *, /, &amp;, &amp;&amp;, |, ||, ~, ?:</code> and statements like <code class="highlight">switch, if</code>
 						</p>
 					</section>
 					<section>
 						<h2>Sequence</h2>
 						<p>
-							<strong>Represenation:</strong> <code>iterator begin, iterator end</code>
+							<strong>Represenation:</strong> <code class="highlight">iterator begin, iterator end</code>
+						</p>
+						<br/>
+						<p class="fragment">
+							<strong>Algorithms:</strong> <code class="highlight">std::copy_if, std::transform, std::accumulate, std::rotate, std::sort, std::find, std::search</code> 
 						</p>
 						<p class="fragment">
-							<strong>Algorithms:</strong> <code>std::copy_if</code>, <code>std::transform</code>, <code>std::accumulate</code>, <code>std::rotate</code>, <code>std::sort</code>, <code>std::find</code>, <code>std::search</code> are examples of algorithms for sequences.
+							<br/>
+							These do not compose well because they use two values to represent a sequence. Thus..
 						</p>
 					</section>
 					<section>
 						<h2>Range</h2>
 						<p>
-							This is under active development with more than one representation.
-							<br/><strong>Represenation:</strong> <code>[anonymous] range::begin, [anonymous] range::end</code> 
+							Ranges are under active development. There is more than one representation.
+							<br/>
+							<br/><strong>Represenation:</strong> <code class="highlight">range values;</code> 
 						</p>
+						<br/>
 						<p class="fragment">
-							<strong>Algorithms:</strong> <code>std::copy_if</code>, <code>std::transform</code>, <code>std::accumulate</code>, <code>std::rotate</code>, <code>std::sort</code>, <code>std::find</code>, <code>std::search</code> are algorithms for ranges - same as sequence but must all be rewritten for each new representation.
+							<strong>Algorithms:</strong> <code class="highlight">std::copy_if, std::transform, std::accumulate, std::rotate, std::sort, std::find, std::search</code> 
 						</p>
 					</section>
 					<section>
 						<h2>Parallel Sequence (Concurrent)</h2>
 						<p>
-							<strong>Represenation:</strong> <code>[integral] start, [integral] end</code> 
+							<strong>Represenation:</strong> <code class="highlight">[integral] start, [integral] end</code> 
 						</p>
+						<br/>
 						<p class="fragment">
-							<strong>Algorithms:</strong> <code>parallel_for</code>, <code>parallel_transform</code>, <code>parallel_reduce</code>, <code>parallel_sort</code> are algorithms for operating on partitioned indicies in parallel.
+							<strong>Algorithms:</strong> <code class="highlight">parallel_for, parallel_transform, parallel_reduce, parallel_sort</code>
 						</p>
 					</section>
 					<section>
 						<h2>Asynchronous Value</h2>
 						<p>
-							<strong>Represenation:</strong> <code>std::promise&lt;T&gt; produce; std::future&lt;T&gt; consume;</code>
+							<strong>Represenation:</strong> 
+							<code class="highlight">std::promise&lt;T&gt; produces;</code>
+							<code class="highlight">std::future&lt;T&gt; consumes;</code>
 						</p>
+						<br/>
 						<p class="fragment">
-							<strong>Proposed Algorithms:</strong> <code>then</code>, <code>when_all</code>, <code>when_any</code>, <code>map</code>, <code>bind</code>, <code>catch_error</code> are algorithms for Asynchronous Values.
+							<strong>Proposed Algorithms:</strong> <code class="highlight">then, when_all, when_any, map, bind, catch_error</code>
 						</p>
 					</section>
 					<section>
 						<h2>Asynchronous Sequence</h2>
 						<p>
-							<strong>Represenation:</strong> <code>observable&lt;T&gt; produce; subscriber&lt;T&gt; consume;</code>
+							This is under active development. This representation is the one that this presentation will cover.
+							<br/>
+							<br/><strong>Represenation:</strong> 
+							<code class="highlight">rxcpp::observable&lt;T&gt; produces;</code>
+							<code class="highlight">rxcpp::subscriber&lt;T&gt; consumes;</code>
 						</p>
+						<br/>
 						<p class="fragment">
-							<strong>Algorithms:</strong> <code>filter</code>, <code>map</code>, <code>reduce</code>, <code>group_by</code>, <code>flat_map</code>, <code>concat</code>, <code>merge</code>, <code>skip</code>, <code>take</code>, <code>buffer</code>, <code>window</code>, <code>combine_latest</code> are algorithms for Asyncronous Sequences.
+							<strong>Algorithms:</strong> <code class="highlight">filter, map, reduce, group_by, flat_map, concat, merge, skip, take, buffer, window, combine_latest</code>
 						</p>
 					</section>
 				</section>
@@ -740,6 +834,10 @@ function linkify( selector ) {
 					{ src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 					{ src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
 					{ src: 'plugin/highlight/highlight.pack.js', async: true, callback: function() { 
+						hljs.configure({
+							tabReplace: '    ', // 4 spaces
+							languages: ['cpp']
+						});
 						[].forEach.call( document.querySelectorAll( '.highlight' ), function( v, i) {
 						  hljs.highlightBlock(v);
 						});
