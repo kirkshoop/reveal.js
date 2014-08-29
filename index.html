@@ -52,7 +52,7 @@
 
 				<section id="demointro">
 					<section>
-						<h2>Demo</h2>
+						<h2>Circle Demo</h2>
 						<p>Idea credit: David Sankel's
 						<a href="https://github.com/boostcon/cppnow_presentations_2014/blob/master/files/Functional-Reactive-Programming.pdf">cppnow2014 presentation</a></p>
 						<p>Gui: <a href="https://github.com/openFrameworks-cpp11/openFrameworks">OpenFrameworks for C++11</a></p>
@@ -236,15 +236,19 @@ IDisposable Scheduler::<span class="fragment zoom-in highlight-current-blue">Sch
 						</pre>
 					</section>
 					<section>
-						<h2>Contract</h2>
+						<h2>Rx Contract</h2>
 						<ul>
-						<li class="fragment highlight-current-green" data-fragment-index="1">OnNext, OnError and OnCompleted calls are always serialized</li>
-						<li class="fragment highlight-current-green" data-fragment-index="2">Dispose, OnError and OnCompleted terminate</li>
-						<li class="fragment highlight-current-green" data-fragment-index="3">OnError and OnCompleted call Dispose</li>
+						<li class="fragment highlight-current-green" data-fragment-index="1">OnNext, OnError and OnComplete calls are always serialized</li>
+						<li class="fragment highlight-current-green" data-fragment-index="2">Dispose, OnError and OnComplete terminate</li>
+						<li class="fragment highlight-current-green" data-fragment-index="3">OnError and OnComplete call Dispose</li>
 						</ul>
-						<img class="stretch fragment zoom-in" data-fragment-index="4" width="400" src="lib/image/marble_legend.png" >
-						<p class="fragment zoom-in" data-fragment-index="4">Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
+						<img class="stretch fragment zoom-in" data-fragment-index="5" width="400" src="lib/image/marble_legend.png" >
+						<p class="fragment zoom-in" data-fragment-index="5">Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
 						</img>
+					</section>
+					<section>
+						<h2>Rx and FRP</h2>
+						<p>Time in Rx is Discrete, not Continuous</p>
 					</section>
 				</section>
 
@@ -275,11 +279,11 @@ IDisposable Scheduler::<span class="fragment zoom-in highlight-current-blue">Sch
 					</section>
 					<section>
 						<h2>Lifetime</h2>
-						<h3><code>composite_subscription</code></h3>
+						<h3><code>subscription</code></h3>
 						<pre class="highlight">
 // lifetime
-bool composite_subscription::<span class="fragment zoom-in highlight-current-green">is_subscribed</span>();
-void composite_subscription::<span class="fragment zoom-in highlight-current-green">unsubscribe</span>();
+bool subscription::<span class="fragment zoom-in highlight-current-green">is_subscribed</span>();
+void subscription::<span class="fragment zoom-in highlight-current-green">unsubscribe</span>();
 
 // nested lifetimes
 weak_subscription composite_subscription::<span class="fragment zoom-in highlight-current-green">add</span>(Subscription /*void()*/);
@@ -295,8 +299,8 @@ static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in hig
 
 // sources
 
-static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in highlight-current-green">from</span>(T...);
-static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in highlight-current-green">iterate</span>(Collection);
+static observable&lt;T0&gt; observable&lt;&gt;::<span class="fragment zoom-in highlight-current-green">from</span>(T0, TN...);
+static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in highlight-current-green">iterate</span>(Collection&lt;T&gt;);
 
 static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in highlight-current-green">range</span>(
 	T first, T last, 
@@ -330,7 +334,7 @@ observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragmen
 
 observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragment-index="10">V</span>&gt; observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragment-index="10">T</span>&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="4">flat_map</span>(
 	Extract /*observable&lt;U&gt;(T)*/, 
-	Transform /*V(U)*/);
+	Transform /*V(T, U)*/);
 
 observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragment-index="11">U</span>&gt; observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragment-index="11">T0</span>&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="5">combine_latest</span>(
 	Transform /*U(T0, TN...)*/, 
@@ -364,7 +368,302 @@ auto observe_on_new = <span class="fragment zoom-in highlight-current-green">obs
 					</section>
 				</section>
 
+<section id="circletest">
+	<section>
+		<h2>Test Demo</h2>
+	</section>
+	<section>
+		<h2>timeInPeriodFromMilliseconds test</h2>
+		<pre class="highlight">
+auto sc = rxsc::make_test();
+auto w = sc.create_worker();
+const rxsc::test::messages&lt;unsigned long long&gt; m_on;
+const rxsc::test::messages&lt;float&gt; p_on;
 
+auto xs = sc.make_hot_observable({
+    m_on.next(300, 250), m_on.next(400, 500),
+    m_on.next(500, 750), m_on.next(600, 1000),
+    m_on.completed(700)
+});
+
+orbit_offset = 0;
+orbit_period = 1.0;
+
+auto res = w.start(
+   [&amp;]() {
+       return timeInPeriodFromMilliseconds(xs.skip(0));
+   });
+
+auto required = rxu::to_vector({
+    p_on.next(300, 0.25), p_on.next(400, 0.5),
+    p_on.next(500, 0.75), p_on.next(600, 0.0),
+    p_on.completed(700)
+});
+auto actual = res.get_observer().messages();
+		</pre>
+	</section>
+	<section>
+		<h2>orbitPointsFromTimeInPeriod test</h2>
+		<pre class="highlight">
+const rxsc::test::messages&lt;float&gt; p_on;
+const rxsc::test::messages&lt;ofPoint&gt; pt_on;
+
+auto roundedPt = [](ofPoint pt){
+    return ofPoint(std::round(pt.x), std::round(pt.y));
+};
+
+auto xs = sc.make_hot_observable({
+    p_on.next(300, 0.25), p_on.next(400, 0.5),
+    p_on.next(500, 0.75), p_on.next(600, 0.0),
+    p_on.completed(700)
+});
+
+orbit_radius = 50;
+
+auto res = w.start(
+    [&amp;]() {
+        return orbitPointsFromTimeInPeriod(xs.skip(0)).map(roundedPt);
+    });
+
+auto required = rxu::to_vector({
+    pt_on.next(300, ofPoint(0,  50)), pt_on.next(400, ofPoint(-50, 0)),
+    pt_on.next(500, ofPoint(0, -50)), pt_on.next(600, ofPoint( 50, 0)),
+    pt_on.completed(700)
+});
+auto actual = res.get_observer().messages();
+		</pre>
+	</section>
+</section>
+
+<section id="unittests">
+	<section>
+		<h2>Unit Tests</h2>
+		<p>Library Credit: <a href="https://github.com/philsquared/Catch">philsquared/Catch</a></p>
+	</section>
+	<section>
+		<h2>Catch library test case</h2>
+		<pre class="highlight">
+SCENARIO("take 2 - fails", "[take][fails][operators]"){ GIVEN("a source"){
+        auto sc = rxsc::<span class="fragment zoom-in highlight-current-green">make_test</span>();
+        auto w = sc.create_worker();
+        const rxsc::test::messages<int> on;
+
+        auto xs = sc.make_hot_observable({
+<span class="fragment zoom-in highlight-current-green">            on.next(150, 1), on.next(210, 2), on.next(220, 3), 
+            on.next(230, 4), on.next(240, 5), on.completed(250)</span>
+        });
+
+        WHEN("2 values are taken"){
+            auto res = w.start(
+                [xs]() {
+                    return xs.<span class="fragment zoom-in highlight-current-green">skip</span>(2).as_dynamic();
+                });
+
+            THEN("the output only contains items sent while subscribed"){
+                auto required = rxu::to_vector({
+                    <span class="fragment zoom-in highlight-current-green">on.next(210, 2), on.next(220, 3), on.completed(220)</span>
+                });
+                auto actual = res.get_observer().messages();
+                REQUIRE(required == actual);
+            }
+// . . .
+}}}
+		</pre>
+	</section>
+	<section>
+		<h2>Catch library output</h2>
+		<img class="stretch" src="lib/image/catch_fails.png" alt="-------------------------------------------------------------------------------
+Scenario: take 2 - fails
+     Given: a source
+      When: 2 values are taken
+      Then: the output only contains items sent while subscribed
+-------------------------------------------------------------------------------
+/Users/kirk/source/rxcpp/Rx/v2/examples/tests/take.cpp:57
+...............................................................................
+
+/Users/kirk/source/rxcpp/Rx/v2/examples/tests/take.cpp:92: FAILED:
+  REQUIRE( required == actual )
+with expansion:
+  { @210-on_next( 2), @220-on_next( 3), @220-on_completed() }
+  ==
+  { @230-on_next( 4), @240-on_next( 5), @250-on_completed() }
+
+==============================================================================="> </img>
+	</section>
+</section>
+
+<section id="httpimage">
+	<section>
+		<h2>Image Demo</h2>
+	</section>
+	<section>
+		<h2>Threaded Http Get Requests</h2>
+		<pre class="highlight">
+<span class="fragment zoom-in highlight-current-green">nexts.setup(next)</span>.
+    map(<span class="fragment zoom-in highlight-current-green">send_urls</span>).
+    merge().
+    <span class="fragment zoom-in highlight-current-green">group_by</span>(
+        [=](const next_url&amp; nu) {
+            // round-robin requests across multiple threads
+            return int(nu.first % <span class="fragment zoom-in highlight-current-green">concurrency</span>);
+        },
+        [](const next_url&amp; nu) {return nu;}).
+    map(
+        [=](const rxcpp::grouped_observable&lt;int, next_url&gt;&amp; urls){
+            
+            auto <span class="fragment zoom-in highlight-current-green">producerthread</span> = rxcpp::observe_on_one_worker(
+                rxcpp::observe_on_new_thread().
+                    create_coordinator().
+                    get_scheduler());
+
+            return <span class="fragment zoom-in highlight-current-green">http_get_image</span>(
+                producerthread,
+                urls.get_key(),
+                urls.skip(0),
+                halts);
+        }).
+    merge().
+    <span class="fragment zoom-in highlight-current-green">subscribe</span>();
+		</pre>
+	</section>
+	<section>
+		<h2>Sending urls over time</h2>
+		<pre class="highlight">
+rxcpp::observable&lt;next_url&gt;
+send_urls(int) {
+    static int count = 0;
+    // adds the image url multiple times (20)
+    // one url is added every 200 milliseconds
+    return rxcpp::observable&lt;&gt;::
+        interval(
+            ofxRx::observe_on_update().<span class="fragment zoom-in highlight-current-green">now</span>(), 
+            std::chrono::<span class="fragment zoom-in highlight-current-green">milliseconds(200)</span>, 
+            ofxRx::<span class="fragment zoom-in highlight-current-green">observe_on_update</span>()).
+        <span class="fragment zoom-in highlight-current-green">take</span>(20).
+        map(
+            [=](long){
+                return <span class="fragment zoom-in highlight-current-green">next_url</span>(
+                    count++, 
+                    "http://. . ./poster_rodents_small.jpg");
+            });
+}
+		</pre>
+	</section>
+	<section>
+		<h2>Queuing options</h2>
+		<pre class="highlight">
+rxcpp::observable&lt;http_response_image&gt;
+http_get_image(
+    rxcpp::observe_on_one_worker producer,
+    int key,
+    const rxcpp::observable&lt;next_url&gt;&amp; urls,
+    const rxcpp::observable&lt;int&gt; stops){
+
+    return urls.
+        map(
+            [=](const next_url&amp; url){
+                return <span class="fragment zoom-in highlight-current-green">make_http_request</span>(producer, key, url, stops);
+            }).
+#if 0
+        // abort old request and start new request immediately
+        <span class="fragment zoom-in highlight-current-green">switch_on_next</span>().
+#else
+        // hold on to new requests until the previous have finished.
+        <span class="fragment zoom-in highlight-current-green">concat</span>().
+#endif
+        map(
+            [=](http_response_image progress){
+                return <span class="fragment zoom-in highlight-current-green">update_ui</span>(key, progress);
+            });
+    }
+}
+		</pre>
+	</section>
+	<section>
+		<h2>Create cancellable request with retry </h2>
+		<pre class="highlight">
+rxcpp::observable&lt;http_response_image&gt;
+make_http_request(. . .){
+    
+    ++queued;
+    // ofx tracing hud does not support multiple threads yet
+    trace_off();
+    
+    return <span class="fragment zoom-in highlight-current-green">http.get(url.second)</span>.
+        subscribe_on(<span class="fragment zoom-in highlight-current-green">producer</span>).
+        map(<span class="fragment zoom-in highlight-current-green">http_progress_image</span>).
+        merge().
+        observe_on(ofxRx::<span class="fragment zoom-in highlight-current-green">observe_on_update</span>()).
+        lift&lt;http_response_image&gt;(
+            [=](rxcpp::subscriber&lt;http_response_image&gt; out){
+                return <span class="fragment zoom-in highlight-current-green">error_display</span>(key, out);
+            }).
+        as_dynamic().
+        finally(
+            [=](){
+                if (--queued == 0) {trace_on();}
+                avg[key] = (progress_labels[key].first + avg[key]) / 2;
+            }).
+        <span class="fragment zoom-in highlight-current-green">retry</span>().
+        <span class="fragment zoom-in highlight-current-green">take_until(stops)</span>.
+        as_dynamic();
+}
+		</pre>
+	</section>
+	<section>
+		<h2>combine the progress and result</h2>
+		<pre class="highlight">
+rxcpp::observable&lt;http_response_image&gt;
+http_progress_image(const ofxRx::HttpProgress&amp; hp) {
+    return <span class="fragment zoom-in highlight-current-green">http_progress</span>(hp).
+        combine_latest(
+            <span class="fragment zoom-in highlight-current-green">http_image</span>(hp).
+                start_with(std::shared_ptr&lt;ofPixels&gt;())).
+        as_dynamic();
+}
+		</pre>
+	</section>
+	<section>
+		<h2>produce error and percentage</h2>
+		<pre class="highlight">
+rxcpp::observable&lt;int&gt;
+http_progress(const ofxRx::HttpProgress&amp; hp) {
+    return hp.
+        response().
+        map(<span class="fragment zoom-in highlight-current-green">http_status_to_error</span>).
+        map(
+            [](ofx::HTTP::ClientResponseProgressArgs rp){
+                return <span class="fragment zoom-in highlight-current-green">int(rp.getProgress() * 100)</span>;
+            }).
+        <span class="fragment zoom-in highlight-current-green">distinct_until_changed</span>();
+}
+		</pre>
+	</section>
+	<section>
+		<h2>append chunks and decode image</h2>
+		<pre class="highlight">
+rxcpp::observable&lt;std::shared_ptr&lt;ofPixels&gt;&gt;
+http_image(const ofxRx::HttpProgress&amp; hp) {
+    return hp.
+        body().
+        scan(
+             std::make_shared&lt;ofBuffer&gt;(),
+             [](std::shared_ptr&lt;ofBuffer&gt; acc, ofxRx::BufferRef&lt;char&gt; b){
+                 acc-><span class="fragment zoom-in highlight-current-green">append</span>(b.begin(), b.size());
+                 return acc;
+             }).
+        <span class="fragment zoom-in highlight-current-green">last</span>().
+        // got all the data, do heavy lifting on the background thread
+        map(<span class="fragment zoom-in highlight-current-green">image_from_buffer</span>).
+        as_dynamic();
+}
+		</pre>
+	</section>
+</section>
+
+<section>
+	<h2>End</h2>
+</section>
 
 <!-- EXTRAS -->
 
