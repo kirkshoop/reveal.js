@@ -42,53 +42,154 @@
 
 			<!-- Any section element inside of this container is displayed as a slide -->
 			<div class="slides">
-				<section id="start">
-					<h1>Async sequences and algorithms</h1>
-					<h3>building usable async primitives</h3>
-					<p>
-						<small>Created by Kirk Shoop / <a href="http://twitter.com/kirkshoop">@kirkshoop</a></small>
-					</p>
-				</section>
 
-				<section id="demointro">
-					<section>
-						<h2>Circle Demo</h2>
-						<p>Idea credit: David Sankel's
-						<a href="https://github.com/boostcon/cppnow_presentations_2014/blob/master/files/Functional-Reactive-Programming.pdf">cppnow2014 presentation</a></p>
-						<p>Gui: <a href="https://github.com/openFrameworks-cpp11/openFrameworks">OpenFrameworks for C++11</a></p>
-						<p> Code: <a href="https://github.com/kirkshoop/ofxRx">on github</a></p>
-					</section>
-					<section>
-						<h2>Combine Time and Movement</h2>
-						<pre class="stretch highlight">
+<section id="start">
+	<h1>Async sequences and algorithms</h1>
+	<h3>building usable async primitives</h3>
+	<p>
+		<small>Created by Kirk Shoop / <a href="http://twitter.com/kirkshoop">@kirkshoop</a></small>
+	</p>
+</section>
 
-void step_one_setup(ofApp* app)
-{
-    auto orbit_points = app-><span class="fragment zoom-in highlight-current-green" data-fragment-index="4">orbitPointsFromTimeInPeriod</span>(
-        app-><span class="fragment zoom-in highlight-current-green" data-fragment-index="3">timeInPeriodFromMilliseconds</span>(
-            app-><span class="fragment zoom-in highlight-current-green" data-fragment-index="1">updates</span>.
-            	<span class="fragment zoom-in highlight-current-green" data-fragment-index="2">milliseconds</span>()));
+<section id="concurrent">
+	<section>
+		<h2>use all available resources</h2>
+		<h3>independent and eager</h3>
+		<p>Photo Credit: <a href="https://www.flickr.com/photos/12896810@N00/4671856505/">Olgierd Pstrykotwórca</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
+		<img class="stretch" width="400" src="lib/image/4671856505_d7ea8266f8.jpg" > </img>
+		<aside class="notes">
+		talk about concurrency
+		</aside>
+	</section>
+</section>
 
-    auto location_points = app-><span class="fragment zoom-in highlight-current-green">mouse</span>.
-        <span class="fragment zoom-in highlight-current-green">moves</span>().
-        <span class="fragment zoom-in highlight-current-green">map(ofApp::pointFromMouse)</span>;
-    
-    <span class="fragment zoom-in highlight-current-green">location_points.
-        combine_latest(std::plus&lt;&gt;(), orbit_points)</span>.
-        subscribe(
-            [=](ofPoint c){
-                // update the point that the draw() call will use
-                app-><span class="fragment zoom-in highlight-current-green">center</span> = c;
-            });
-}
-						</pre>
-					</section>
+<section id="asynchronous">
+	<section>
+		<h2>use minimal resources</h2>
+		<h3>dependent and lazy</h3>
+		<p>Photo Credit: <a href="https://www.flickr.com/photos/29226360@N06/3912770640">Rob Grambau</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
+		<img class="stretch" width="400" src="lib/image/3912770640_db6333a3f9_z.jpg" > </img>
+		<aside class="notes">
+		talk about asynchrony
+		</aside>
+	</section>
+</section>
 
-					<section>
-						<h2>Orbit from Time</h2>
-						<pre class="stretch highlight">
+<section id="multivalue">
+	<section>
+		<h2>Asynchronous and Concurrent</h2>
+		<p>Photo Credit: <a href="https://www.flickr.com/photos/13912353@N00/2375245079/">Carlos Caicedo</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
+		<img class="stretch" src="lib/image/2375245079_71f4545ea9_o.jpg" > </img>
+		<aside class="notes">
+		code needs to use multiple concurrent serialized sequences with efficient algorithms that manipulate and coordinate the values
+		many sequences, each sequence time-indexed, each sequence serialized.
+		</aside>
+	</section>
+</section>
+
+<section id="notbytes">
+	<h2>Streams are not always Bytes</h2>
+	<p>Photo Credit: <a href="https://www.flickr.com/photos/44124372247@N01/182799169/">jeffk</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
+	<img class="stretch" width="400" src="lib/image/182799169_0cf5f561c1_o.jpg" > </img>
+	<aside class="notes">
+	Don't invent time-indexed sequence representations over and over again for each use
+	</aside>
+</section>
+
+<section id="aboutalgorithms">
+	<h2>All about the algorithms</h2>
+	<p>Movie Credit: <a href="http://www.rottentomatoes.com/m/office_space/">Office Space</a></p>
+	<img class="stretch" width="400" src="lib/image/mundane_detail.png" > </img>
+	<aside class="notes">
+	The most important thing is the algorithms that compose with time-indexed sequences of T
+	</aside>
+</section>
+
+<section id="sequencesintime">
+	<section>
+		<h2>Time-Indexed Sequences of &lt;T&gt;</h2>
+		<p>Photo Credit: <a href="https://www.flickr.com/photos/14846648@N08/2525441871/">Rik Hermans</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
+		<img class="stretch" width="400" src="lib/image/2525441871_86eb7461f7.jpg" > </img>
+		<aside class="notes">
+		What streams does your code use?
+		</aside>
+	</section>
+	<section>
+		<h2>Examples</h2>
+		<ul>
+			<li class="fragment grow highlight-current-green">Periodic Timer</li>
+			<li class="fragment grow highlight-current-green">Mouse Clicks</li>
+			<li class="fragment grow highlight-current-green">Mouse Moves</li>
+			<li class="fragment grow highlight-current-green">Network Packets</li>
+			<li class="fragment grow highlight-current-green">File Reads/Writes</li>
+			<li class="fragment grow highlight-current-green">. . .</li>
+		</ul>
+		<aside class="notes">
+		</aside>
+	</section>
+	<section>
+		<h2>Describing Sequences in Time</h2>
+		<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
+		<img class="stretch" width="400" src="lib/image/marble_legend.png" > </img>
+	</section>
+	<section>
+		<h2>value sequence diagram</h2>
+		<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
+		<img class="stretch" width="400" src="lib/image/from_marble.png" > </img>
+	</section>
+	<section>
+		<h2>value generator diagram</h2>
+		<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
+		<img class="stretch" width="400" src="lib/image/range_marble.png" > </img>
+	</section>
+	<section>
+		<h2>Time interval diagram</h2>
+		<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
+		<img class="stretch" width="400" src="lib/image/interval_marble.png" > </img>
+	</section>
+	<section>
+		<h2>interactive diagrams</h2>
+		<p>Many interactive diagrams can be found at <a href="http://rxmarbles.com/">RxMarbles</a></p>
+		<img class="stretch" width="400" src="lib/image/rxmarbles.png" > </img>
+	</section>
+</section>
+
+<section id="circledemo">
+	<section>
+		<h2>Circle Demo</h2>
+		<p>Idea credit: David Sankel's
+		<a href="https://github.com/boostcon/cppnow_presentations_2014/blob/master/files/Functional-Reactive-Programming.pdf">cppnow2014 presentation</a></p>
+		<p>Gui: <a href="https://github.com/openFrameworks-cpp11/openFrameworks">OpenFrameworks for C++11</a></p>
+		<p> Code: <a href="https://github.com/kirkshoop/ofxRx">OfxRx</a> &amp; <a href="https://github.com/Reactive-Extensions/RxCpp">RxCpp</a> </p>
+		<img class="stretch" src="lib/image/circle_demo.png" > </img>
+	</section>
+	<section>
+		<h2>Combine Time and Movement</h2>
+		<pre class="stretch highlight">
+auto orbit_points = <span class="fragment zoom-in highlight-current-green" data-fragment-index="4">orbitPointsFromTimeInPeriod</span>(
+    <span class="fragment zoom-in highlight-current-green" data-fragment-index="3">timeInPeriodFromMilliseconds</span>(
+        <span class="fragment zoom-in highlight-current-green" data-fragment-index="1">updates</span>.
+        	<span class="fragment zoom-in highlight-current-green" data-fragment-index="2">milliseconds</span>()));
+
+auto location_points = <span class="fragment zoom-in highlight-current-green">mouse</span>.
+    <span class="fragment zoom-in highlight-current-green">moves</span>().
+    map(<span class="fragment zoom-in highlight-current-green">pointFromMouse</span>);
+
+<span class="fragment zoom-in highlight-current-green">location_points.
+    combine_latest(std::plus&lt;&gt;(), orbit_points)</span>.
+    subscribe(
+        [=](ofPoint c){
+            // update the point that the draw() call will use
+            <span class="fragment zoom-in highlight-current-green">center</span> = c;
+        });
+		</pre>
+	</section>
+
+	<section>
+		<h2>Orbit from Time</h2>
+		<pre class="stretch highlight">
 <span class="fragment zoom-in highlight-current-green" data-fragment-index="3">rxcpp::observable&lt;float&gt;</span>
-ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">timeInPeriodFromMilliseconds</span>(
+ofxCircle::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">timeInPeriodFromMilliseconds</span>(
     <span class="fragment zoom-in highlight-current-green" data-fragment-index="2">rxcpp::observable&lt;unsigned long long&gt;</span> timeInMilliseconds){
     return timeInMilliseconds.
         map(
@@ -100,7 +201,7 @@ ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-inde
 }
 
 <span class="fragment zoom-in highlight-current-green" data-fragment-index="9">rxcpp::observable&lt;ofPoint&gt;</span>
-ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-index="7">orbitPointsFromTimeInPeriod</span>(
+ofxCircle::<span class="fragment zoom-in highlight-current-green" data-fragment-index="7">orbitPointsFromTimeInPeriod</span>(
     <span class="fragment zoom-in highlight-current-green" data-fragment-index="8">rxcpp::observable&lt;float&gt;</span> timeInPeriod){
     return timeInPeriod.
         map(
@@ -110,84 +211,30 @@ ofApp::<span class="fragment zoom-in highlight-current-green" data-fragment-inde
                     orbit_radius * std::<span class="fragment zoom-in highlight-current-green" data-fragment-index="12">sin</span>(t * 2 * 3.14));
             });
 }
-						</pre>
-					</section>
-				</section>
+		</pre>
+	</section>
+</section>
 
-				<section id="sequencesintime">
-					<section>
-						<h2>Time Indexed Sequences of &lt;T&gt;</h2>
-						<aside class="notes">
-						</aside>
-					</section>
-					<section>
-						<h2>Examples</h2>
-						<ul>
-							<li class="fragment grow highlight-current-green">Periodic Timer</li>
-							<li class="fragment grow highlight-current-green">Mouse Clicks</li>
-							<li class="fragment grow highlight-current-green">Mouse Moves</li>
-							<li class="fragment grow highlight-current-green">Network Packets</li>
-							<li class="fragment grow highlight-current-green">File Reads/Writes</li>
-						</ul>
-						<aside class="notes">
-						</aside>
-					</section>
-					<section>
-						<h2>Async results are rarely a single value</h2>
-						<p>Photo Credit: <a href="https://www.flickr.com/photos/13912353@N00/2375245079/">Carlos Caicedo</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
-						<img class="stretch" src="lib/image/2375245079_71f4545ea9_o.jpg" > </img>
-						<aside class="notes">
-						</aside>
-					</section>
-					<section>
-						<h2>Streams are not always Bytes</h2>
-						<p>Photo Credit: <a href="https://www.flickr.com/photos/44124372247@N01/182799169/">jeffk</a> <a href="https://creativecommons.org/licenses/by/2.0/">cc</a></p>
-						<img class="stretch" width="400" src="lib/image/182799169_0cf5f561c1_o.jpg" > </img>
-						<aside class="notes">
-						</aside>
-					</section>
-					<section>
-						<h2>Describing Sequences in Time</h2>
-						<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
-						<img class="stretch" width="400" src="lib/image/marble_legend.png" > </img>
-					</section>
-					<section>
-						<h2>value sequence diagram</h2>
-						<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
-						<img class="stretch" width="400" src="lib/image/from_marble.png" > </img>
-					</section>
-					<section>
-						<h2>value generator diagram</h2>
-						<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
-						<img class="stretch" width="400" src="lib/image/range_marble.png" > </img>
-					</section>
-					<section>
-						<h2>Time interval diagram</h2>
-						<p>Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
-						<img class="stretch" width="400" src="lib/image/interval_marble.png" > </img>
-					</section>
-				</section>
-
-				<section id="rx">
-					<section>
-						<h2>Rx - Reactive Extensions</h2>
-						<p></p>
-					</section>
-					<section>
-						<h2>Origin</h2>
-						<ul>
-						<li class="fragment grow highlight-current-green">Rx originated as Rx.Net</li>
-						<li class="fragment grow highlight-current-green">Rx.Net followed LINQ.</li>
-						</ul>
-					</section>
-					<section>
-						<h2>LINQ</h2>
-						<ul>
-						<li class="fragment grow highlight-current-green">Set of algorithms for <code>IEnumerable</code></li>
-						<li class="fragment grow highlight-current-green">Equivalent to range efforts for C++</li>
-						<li class="fragment grow highlight-current-green">Names from SQL syntax</li>
-						</ul>
-						<pre class="highlight">
+<section id="rx">
+	<section>
+		<a href="https://github.com/Reactive-Extensions"><h2>Rx - Reactive Extensions</h2></a>
+		<a href="https://github.com/Reactive-Extensions"><img src="lib/image/volta.png" > </img></a>
+	</section>
+	<section>
+		<h2>Origin</h2>
+		<ul>
+		<li class="fragment grow highlight-current-green">Rx originated as Rx.Net</li>
+		<li class="fragment grow highlight-current-green">Rx.Net followed LINQ.</li>
+		</ul>
+	</section>
+	<section>
+		<h2>LINQ</h2>
+		<ul>
+		<li class="fragment grow highlight-current-green">Set of algorithms for <code>IEnumerable</code></li>
+		<li class="fragment grow highlight-current-green">Equivalent to range efforts for C++</li>
+		<li class="fragment grow highlight-current-green">Names from SQL syntax</li>
+		</ul>
+		<pre class="highlight">
 // C#
 
 List&lt;string&gt; fruits =
@@ -198,12 +245,12 @@ IEnumerable&lt;string&gt; query = fruits.<span class="fragment zoom-in highlight
 
 IEnumerable&lt;int&gt; squares =
     Enumerable.Range(1, 10).<span class="fragment zoom-in highlight-current-green">Select</span>(x =&gt; x * x);
-			            </pre>
-					</section>
-					<section>
-						<h2>Rx is LINQ inverted</h2>
-						<p>LINQ (Pull)</p>
-						<pre class="highlight">
+        </pre>
+	</section>
+	<section>
+		<h2>Rx is LINQ inverted</h2>
+		<p>LINQ (Pull)</p>
+		<pre class="highlight">
 // C#
 
 // GetEnumerator starts an independent in-order traversal of the source
@@ -211,9 +258,9 @@ IEnumerator&lt;T&gt; IEnumerable&lt;T&gt;::<span class="fragment zoom-in highlig
 	void IEnumerator&lt;T&gt;::IDisposable::<span class="fragment zoom-in highlight-current-green" data-fragment-index="2">Dispose</span>(); // cancelation
 	<span class="fragment zoom-in highlight-current-green" data-fragment-index="3">bool</span> IEnumerator&lt;T&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">MoveNext</span>(); <span class="fragment zoom-in highlight-current-green" data-fragment-index="3">// false for complete</span>
 	T    IEnumerator&lt;T&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="4">Current</span>; <span class="fragment zoom-in highlight-current-green" data-fragment-index="5">// throws for error</span>
-						</pre>
-						<p>Rx (Push)</p>
-						<pre class="highlight">
+		</pre>
+		<p>Rx (Push)</p>
+		<pre class="highlight">
 // C#
 
 // Subscribe inverts GetEnumerator and MoveNext
@@ -222,65 +269,73 @@ IDisposable IObservable&lt;T&gt;::<span class="fragment zoom-in highlight-curren
 	Observer&lt;T&gt;::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="3">OnComplete</span>(); // inverts MoveNext return value
 	Observer&lt;T&gt;::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="4">OnNext</span>(T); // inverts Current
 	Observer&lt;T&gt;::<span class="fragment zoom-in highlight-current-blue" data-fragment-index="5">OnError</span>(Exception); // inverts throw
-			            </pre>
-					</section>
-					<section>
-						<h2>Time</h2>
-						<pre class="highlight">
+        </pre>
+	</section>
+	<section>
+		<h2>Time</h2>
+		<pre class="highlight">
 // C#
 
 DateTimeOffset Scheduler::<span class="fragment zoom-in highlight-current-blue">Now</span>; // current time
 IDisposable Scheduler::<span class="fragment zoom-in highlight-current-blue">Schedule</span>(DateTimeOffset dueTime, Action action);
 	void IDisposable::<span class="fragment zoom-in highlight-current-blue">Dispose</span>(); // cancelation
 	void Action::<span class="fragment zoom-in highlight-current-blue">Action</span>();
-						</pre>
-					</section>
-					<section>
-						<h2>Rx Contract</h2>
-						<ul>
-						<li class="fragment highlight-current-green" data-fragment-index="1">OnNext, OnError and OnComplete calls are always serialized</li>
-						<li class="fragment highlight-current-green" data-fragment-index="2">Dispose, OnError and OnComplete terminate</li>
-						<li class="fragment highlight-current-green" data-fragment-index="3">OnError and OnComplete call Dispose</li>
-						</ul>
-						<img class="stretch fragment zoom-in" data-fragment-index="5" width="400" src="lib/image/marble_legend.png" >
-						<p class="fragment zoom-in" data-fragment-index="5">Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
-						</img>
-					</section>
-					<section>
-						<h2>Rx and FRP</h2>
-						<p>Time in Rx is Discrete, not Continuous</p>
-					</section>
-				</section>
+		</pre>
+	</section>
+	<section>
+		<h2>Rx Contract</h2>
+		<ul>
+		<li class="fragment highlight-current-green" data-fragment-index="1">OnNext, OnError and OnComplete calls are always serialized</li>
+		<li class="fragment highlight-current-green" data-fragment-index="2">Dispose, OnError and OnComplete terminate</li>
+		<li class="fragment highlight-current-green" data-fragment-index="3">OnError and OnComplete call Dispose</li>
+		</ul>
+		<img class="stretch fragment zoom-in" data-fragment-index="5" width="400" src="lib/image/marble_legend.png" >
+		<p class="fragment zoom-in" data-fragment-index="5">Credit: <a href="https://github.com/ReactiveX/RxJava/wiki/Observable">RxJava Wiki</a></p>
+		</img>
+	</section>
+	<section>
+		<h2>Rx and FRP</h2>
+		<p>Time in Rx is Discrete, not Continuous</p>
+	</section>
+	<section>
+		<h2>Rx Learning Resources</h2>
+		<ul>
+		<li><a href="http://reactive-extensions.github.io/learnrx/">LearnRx</a> (RxJS) by JHusain from Netflix</li>
+		<li><a href="http://www.introtorx.com/content/v1.0.10621.0/01_WhyRx.html">IntroToRx</a> (Rx.NET) by Lee Campbell</li>
+		<li><a href="https://gist.github.com/staltz/868e7e9bc2a7b8c1f754">IntroRx</a> (RxJS) by André Staltz</li>
+		</ul>
+	</section>
+</section>
 
-				<section id="rxcpp">
-					<section>
-						<h2>Rxcpp</h2>
-						<p></p>
-					</section>
-					<section>
-						<h2>Origin</h2>
-						<ul>
-						<li class="fragment grow highlight-current-green">Started as a prototype written by Aaron Lahman</li>
-						<li class="fragment grow highlight-current-green">v2 changes the tradoffs selected by the prototype</li>
-						<li class="fragment grow highlight-current-green">v2 has changes introduced in RxJava</li>
-						</ul>
-					</section>
-					<section>
-						<h2>V2 Design goals</h2>
-						<ul>
-						<li class="fragment grow highlight-current-green">header-only</li>
-						<li class="fragment grow highlight-current-green">compile-time polymorphism</li>
-						<li class="fragment grow highlight-current-green">opt-in runtime polymorphism</li>
-						<li class="fragment grow highlight-current-green">opt-in concurrency</li>
-						<li class="fragment grow highlight-current-green">ref classes wrapping all pointers</li>
-						<li class="fragment grow highlight-current-green">compiles with latest gcc, clang and VC compilers</li>
-						<li class="fragment grow highlight-current-green">C++ library is the only dependency</li>
-						</ul>
-					</section>
-					<section>
-						<h2>Lifetime</h2>
-						<h3><code>subscription</code></h3>
-						<pre class="highlight">
+<section id="rxcpp">
+	<section>
+		<a href="https://github.com/Reactive-Extensions/rxcpp"><h2>RxCpp</h2></a>
+		<a href="https://github.com/Reactive-Extensions/rxcpp"><img class="stretch" src="lib/image/rxcpp_badges.png" > </img></a>
+	</section>
+	<section>
+		<h2>Origin</h2>
+		<ul>
+		<li class="fragment grow highlight-current-green">Started as a prototype written by Aaron Lahman</li>
+		<li class="fragment grow highlight-current-green">v2 changes the tradoffs selected by the prototype</li>
+		<li class="fragment grow highlight-current-green">v2 has changes introduced in RxJava</li>
+		</ul>
+	</section>
+	<section>
+		<h2>V2 Design goals</h2>
+		<ul>
+		<li class="fragment grow highlight-current-green">header-only</li>
+		<li class="fragment grow highlight-current-green">compile-time polymorphism</li>
+		<li class="fragment grow highlight-current-green">opt-in runtime polymorphism</li>
+		<li class="fragment grow highlight-current-green">opt-in concurrency</li>
+		<li class="fragment grow highlight-current-green">ref classes wrapping all pointers</li>
+		<li class="fragment grow highlight-current-green">compiles with latest gcc, clang and VC compilers</li>
+		<li class="fragment grow highlight-current-green">C++ library is the only dependency</li>
+		</ul>
+	</section>
+	<section>
+		<h2>Lifetime</h2>
+		<h3><code>subscription</code></h3>
+		<pre class="highlight">
 // lifetime
 bool subscription::<span class="fragment zoom-in highlight-current-green">is_subscribed</span>();
 void subscription::<span class="fragment zoom-in highlight-current-green">unsubscribe</span>();
@@ -288,12 +343,12 @@ void subscription::<span class="fragment zoom-in highlight-current-green">unsubs
 // nested lifetimes
 weak_subscription composite_subscription::<span class="fragment zoom-in highlight-current-green">add</span>(Subscription /*void()*/);
 void composite_subscription::<span class="fragment zoom-in highlight-current-green">remove</span>(weak_subscription);
-			            </pre>
-					</section>
-					<section>
-						<h2>Factory</h2>
-						<h3><code>observable&lt;&gt;</code></h3>
-						<pre class="highlight">
+        </pre>
+	</section>
+	<section>
+		<h2>Factory</h2>
+		<h3><code>observable&lt;&gt;</code></h3>
+		<pre class="highlight">
 static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in highlight-current-green">create&lt;T&gt;</span>(
 	OnSubscribe /*void(subscriber&lt;T&gt; out)*/);
 
@@ -315,12 +370,12 @@ static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in hig
 static observable&lt;T&gt; observable&lt;&gt;::<span class="fragment zoom-in highlight-current-green">error&lt;T&gt;</span>(Exception);
 
 // . . .
-			            </pre>
-					</section>
-					<section>
-						<h2>Instance</h2>
-						<h3><code>observable&lt;T&gt;</code></h3>
-						<pre class="highlight">
+        </pre>
+	</section>
+	<section>
+		<h2>Instance</h2>
+		<h3><code>observable&lt;T&gt;</code></h3>
+		<pre class="highlight">
 composite_subscription observable&lt;T&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="1">subscribe</span>(
 	composite_subscription lifetime, 
 	OnNext /*void(T)*/,
@@ -344,12 +399,12 @@ observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragmen
 observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragment-index="13">T</span>&gt; observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragment-index="13">T</span>&gt;::<span class="fragment zoom-in highlight-current-green" data-fragment-index="7">concat</span>(observable&lt;<span class="fragment zoom-in highlight-current-blue" data-fragment-index="13">T</span>&gt;...);
 
 // . . .
-			            </pre>
-					</section>
-					<section>
-						<h2>Thread-Safety</h2>
-						<h3><code>Coordination</code></h3>
-						<pre class="highlight">
+        </pre>
+	</section>
+	<section>
+		<h2>Thread-Safety</h2>
+		<h3><code>Coordination</code></h3>
+		<pre class="highlight">
 // Default - not thread safe
 // noop for when all observables are using the same thread
 auto noop_immediate = <span class="fragment zoom-in highlight-current-green">identity_immediate</span>();
@@ -364,42 +419,47 @@ auto serialize_with_new = <span class="fragment zoom-in highlight-current-green"
 // Uses a queue to shift all calls to a new thread
 auto observe_on_pool = <span class="fragment zoom-in highlight-current-green">observe_on_event_loop</span>();
 auto observe_on_new = <span class="fragment zoom-in highlight-current-green">observe_on_new_thread</span>();
-						</pre>
-					</section>
-				</section>
+		</pre>
+	</section>
+	<section>
+		<h2>Suggestions</h2>
+		<img class="stretch" src="lib/image/suggestions.png" > </img>
+	</section>
+</section>
 
-<section id="circletest">
+<section id="testdemo">
 	<section>
 		<h2>Test Demo</h2>
+		<p> Code: <a href="https://github.com/kirkshoop/ofxRx">OfxRx</a> &amp; <a href="https://github.com/Reactive-Extensions/RxCpp">RxCpp</a> </p>
 	</section>
 	<section>
 		<h2>timeInPeriodFromMilliseconds test</h2>
 		<pre class="highlight">
-auto sc = rxsc::make_test();
+auto sc = rxsc::<span class="fragment zoom-in highlight-current-green">make_test</span>();
 auto w = sc.create_worker();
 const rxsc::test::messages&lt;unsigned long long&gt; m_on;
 const rxsc::test::messages&lt;float&gt; p_on;
 
 auto xs = sc.make_hot_observable({
-    m_on.next(300, 250), m_on.next(400, 500),
+<span class="fragment zoom-in highlight-current-green">    m_on.next(300, 250), m_on.next(400, 500),
     m_on.next(500, 750), m_on.next(600, 1000),
-    m_on.completed(700)
+    m_on.completed(700)</span>
 });
 
 orbit_offset = 0;
 orbit_period = 1.0;
 
-auto res = w.start(
+auto res = w.<span class="fragment zoom-in highlight-current-green">start</span>(
    [&amp;]() {
-       return timeInPeriodFromMilliseconds(xs.skip(0));
+       return <span class="fragment zoom-in highlight-current-green">timeInPeriodFromMilliseconds</span>(xs);
    });
 
 auto required = rxu::to_vector({
-    p_on.next(300, 0.25), p_on.next(400, 0.5),
+<span class="fragment zoom-in highlight-current-green">    p_on.next(300, 0.25), p_on.next(400, 0.5),
     p_on.next(500, 0.75), p_on.next(600, 0.0),
-    p_on.completed(700)
+    p_on.completed(700)</span>
 });
-auto actual = res.get_observer().messages();
+auto actual = res.get_observer().<span class="fragment zoom-in highlight-current-green">messages</span>();
 		</pre>
 	</section>
 	<section>
@@ -408,27 +468,27 @@ auto actual = res.get_observer().messages();
 const rxsc::test::messages&lt;float&gt; p_on;
 const rxsc::test::messages&lt;ofPoint&gt; pt_on;
 
-auto roundedPt = [](ofPoint pt){
+auto <span class="fragment zoom-in highlight-current-green">roundedPt</span> = [](ofPoint pt){
     return ofPoint(std::round(pt.x), std::round(pt.y));
 };
 
 auto xs = sc.make_hot_observable({
-    p_on.next(300, 0.25), p_on.next(400, 0.5),
+<span class="fragment zoom-in highlight-current-green">    p_on.next(300, 0.25), p_on.next(400, 0.5),
     p_on.next(500, 0.75), p_on.next(600, 0.0),
-    p_on.completed(700)
+    p_on.completed(700)</span>
 });
 
 orbit_radius = 50;
 
 auto res = w.start(
     [&amp;]() {
-        return orbitPointsFromTimeInPeriod(xs.skip(0)).map(roundedPt);
+        return <span class="fragment zoom-in highlight-current-green">orbitPointsFromTimeInPeriod</span>(xs).map(roundedPt);
     });
 
 auto required = rxu::to_vector({
-    pt_on.next(300, ofPoint(0,  50)), pt_on.next(400, ofPoint(-50, 0)),
+<span class="fragment zoom-in highlight-current-green">    pt_on.next(300, ofPoint(0,  50)), pt_on.next(400, ofPoint(-50, 0)),
     pt_on.next(500, ofPoint(0, -50)), pt_on.next(600, ofPoint( 50, 0)),
-    pt_on.completed(700)
+    pt_on.completed(700)</span>
 });
 auto actual = res.get_observer().messages();
 		</pre>
@@ -454,7 +514,7 @@ SCENARIO("take 2 - fails", "[take][fails][operators]"){ GIVEN("a source"){
         });
 
         WHEN("2 values are taken"){
-            auto res = w.start(
+            auto res = w.<span class="fragment zoom-in highlight-current-green">start</span>(
                 [xs]() {
                     return xs.<span class="fragment zoom-in highlight-current-green">skip</span>(2).as_dynamic();
                 });
@@ -463,8 +523,8 @@ SCENARIO("take 2 - fails", "[take][fails][operators]"){ GIVEN("a source"){
                 auto required = rxu::to_vector({
                     <span class="fragment zoom-in highlight-current-green">on.next(210, 2), on.next(220, 3), on.completed(220)</span>
                 });
-                auto actual = res.get_observer().messages();
-                REQUIRE(required == actual);
+                auto actual = res.get_observer().<span class="fragment zoom-in highlight-current-green">messages</span>();
+                <span class="fragment zoom-in highlight-current-green">REQUIRE(required == actual)</span>;
             }
 // . . .
 }}}
@@ -492,9 +552,11 @@ with expansion:
 	</section>
 </section>
 
-<section id="httpimage">
+<section id="imagedemo">
 	<section>
 		<h2>Image Demo</h2>
+		<p> Code: <a href="https://github.com/kirkshoop/ofxRx">OfxRx</a> &amp; <a href="https://github.com/Reactive-Extensions/RxCpp">RxCpp</a> </p>
+		<img class="stretch" src="lib/image/image_demo.png" > </img>
 	</section>
 	<section>
 		<h2>Threaded Http Get Requests</h2>
@@ -505,7 +567,7 @@ with expansion:
     <span class="fragment zoom-in highlight-current-green">group_by</span>(
         [=](const next_url&amp; nu) {
             // round-robin requests across multiple threads
-            return int(nu.first % <span class="fragment zoom-in highlight-current-green">concurrency</span>);
+            return int(nu.first % <span class="fragment zoom-in highlight-current-green">thread_count</span>);
         },
         [](const next_url&amp; nu) {return nu;}).
     map(
@@ -519,34 +581,11 @@ with expansion:
             return <span class="fragment zoom-in highlight-current-green">http_get_image</span>(
                 producerthread,
                 urls.get_key(),
-                urls.skip(0),
+                urls,
                 halts);
         }).
     merge().
     <span class="fragment zoom-in highlight-current-green">subscribe</span>();
-		</pre>
-	</section>
-	<section>
-		<h2>Sending urls over time</h2>
-		<pre class="highlight">
-rxcpp::observable&lt;next_url&gt;
-send_urls(int) {
-    static int count = 0;
-    // adds the image url multiple times (20)
-    // one url is added every 200 milliseconds
-    return rxcpp::observable&lt;&gt;::
-        interval(
-            ofxRx::observe_on_update().<span class="fragment zoom-in highlight-current-green">now</span>(), 
-            std::chrono::<span class="fragment zoom-in highlight-current-green">milliseconds(200)</span>, 
-            ofxRx::<span class="fragment zoom-in highlight-current-green">observe_on_update</span>()).
-        <span class="fragment zoom-in highlight-current-green">take</span>(20).
-        map(
-            [=](long){
-                return <span class="fragment zoom-in highlight-current-green">next_url</span>(
-                    count++, 
-                    "http://. . ./poster_rodents_small.jpg");
-            });
-}
 		</pre>
 	</section>
 	<section>
@@ -598,15 +637,55 @@ make_http_request(. . .){
             [=](rxcpp::subscriber&lt;http_response_image&gt; out){
                 return <span class="fragment zoom-in highlight-current-green">error_display</span>(key, out);
             }).
-        as_dynamic().
         finally(
             [=](){
                 if (--queued == 0) {trace_on();}
                 avg[key] = (progress_labels[key].first + avg[key]) / 2;
             }).
         <span class="fragment zoom-in highlight-current-green">retry</span>().
-        <span class="fragment zoom-in highlight-current-green">take_until(stops)</span>.
-        as_dynamic();
+        <span class="fragment zoom-in highlight-current-green">take_until(stops)</span>;
+}
+		</pre>
+	</section>
+	<section>
+		<h2>append chunks and decode image</h2>
+		<pre class="highlight">
+rxcpp::observable&lt;std::shared_ptr&lt;ofPixels&gt;&gt;
+http_image(const ofxRx::HttpProgress&amp; hp) {
+    return hp.
+        body().
+        scan(
+             std::make_shared&lt;ofBuffer&gt;(),
+             [](std::shared_ptr&lt;ofBuffer&gt; acc, ofxRx::BufferRef&lt;char&gt; b){
+                 acc-><span class="fragment zoom-in highlight-current-green">append</span>(b.begin(), b.size());
+                 return acc;
+             }).
+        <span class="fragment zoom-in highlight-current-green">last</span>().
+        // got all the data, do heavy lifting on the background thread
+        map(<span class="fragment zoom-in highlight-current-green">image_from_buffer</span>);
+}
+		</pre>
+	</section>
+	<section>
+		<h2>Sending urls over time</h2>
+		<pre class="highlight">
+rxcpp::observable&lt;next_url&gt;
+send_urls(int) {
+    static int count = 0;
+    // adds the image url multiple times (20)
+    // one url is added every 200 milliseconds
+    return rxcpp::observable&lt;&gt;::
+        interval(
+            ofxRx::observe_on_update().<span class="fragment zoom-in highlight-current-green">now</span>(), 
+            std::chrono::<span class="fragment zoom-in highlight-current-green">milliseconds(200)</span>, 
+            ofxRx::<span class="fragment zoom-in highlight-current-green">observe_on_update</span>()).
+        <span class="fragment zoom-in highlight-current-green">take</span>(20).
+        map(
+            [=](long){
+                return <span class="fragment zoom-in highlight-current-green">next_url</span>(
+                    count++, 
+                    "http://. . ./poster_rodents_small.jpg");
+            });
 }
 		</pre>
 	</section>
@@ -618,8 +697,7 @@ http_progress_image(const ofxRx::HttpProgress&amp; hp) {
     return <span class="fragment zoom-in highlight-current-green">http_progress</span>(hp).
         combine_latest(
             <span class="fragment zoom-in highlight-current-green">http_image</span>(hp).
-                start_with(std::shared_ptr&lt;ofPixels&gt;())).
-        as_dynamic();
+                start_with(std::shared_ptr&lt;ofPixels&gt;()));
 }
 		</pre>
 	</section>
@@ -639,53 +717,31 @@ http_progress(const ofxRx::HttpProgress&amp; hp) {
 }
 		</pre>
 	</section>
-	<section>
-		<h2>append chunks and decode image</h2>
-		<pre class="highlight">
-rxcpp::observable&lt;std::shared_ptr&lt;ofPixels&gt;&gt;
-http_image(const ofxRx::HttpProgress&amp; hp) {
-    return hp.
-        body().
-        scan(
-             std::make_shared&lt;ofBuffer&gt;(),
-             [](std::shared_ptr&lt;ofBuffer&gt; acc, ofxRx::BufferRef&lt;char&gt; b){
-                 acc-><span class="fragment zoom-in highlight-current-green">append</span>(b.begin(), b.size());
-                 return acc;
-             }).
-        <span class="fragment zoom-in highlight-current-green">last</span>().
-        // got all the data, do heavy lifting on the background thread
-        map(<span class="fragment zoom-in highlight-current-green">image_from_buffer</span>).
-        as_dynamic();
-}
-		</pre>
-	</section>
 </section>
 
 <section>
-	<h2>End</h2>
-</section>
+	<section>
+		<h2>End</h2>
+	</section>
 
-<!-- EXTRAS -->
+	<section>
+		<h2>Languages</h2>
+		<ul>
+		<li class="fragment grow highlight-current-green">Rx.Net</li>
+		<li class="fragment grow highlight-current-green">RxJs</li>
+		<li class="fragment grow highlight-current-green">RxJava</li>
+		<li class="fragment grow highlight-current-green">ReactiveCocoa, RxSwift</li>
+		<li class="fragment grow highlight-current-green">RxPy</li>
+		<li class="fragment grow highlight-current-green">RxGo</li>
+		<li class="fragment grow highlight-current-green">...</li>
+		<br/>
+		<li class="fragment grow highlight-current-red">Rxcpp</li>
+		</ul>
+	</section>
 
-
-				<section>
-					<h2>Languages</h2>
-					<ul>
-					<li class="fragment grow highlight-current-green">Rx.Net</li>
-					<li class="fragment grow highlight-current-green">RxJs</li>
-					<li class="fragment grow highlight-current-green">RxJava</li>
-					<li class="fragment grow highlight-current-green">ReactiveCocoa, RxSwift</li>
-					<li class="fragment grow highlight-current-green">RxPy</li>
-					<li class="fragment grow highlight-current-green">RxGo</li>
-					<li class="fragment grow highlight-current-green">...</li>
-					<br/>
-					<li class="fragment grow highlight-current-red">Rxcpp</li>
-					</ul>
-				</section>
-
-				<section>
-					<h2><code>subscriber&lt;T&gt;</code></h2>
-					<pre class="highlight">
+	<section>
+		<h2><code>subscriber&lt;T&gt;</code></h2>
+		<pre class="highlight">
 subscriber&lt;T&gt; <span class="fragment zoom-in highlight-current-green" >make_subscriber&lt;T&gt;</span>(
 composite_subscription lifetime, 
 OnNext /*void(T)*/,
@@ -703,24 +759,24 @@ void subscriber&lt;T&gt;::<span class="fragment zoom-in highlight-current-green"
 weak_subscription subscriber&lt;T&gt;::<span class="fragment zoom-in highlight-current-green">add</span>(
 Subscription /*void()*/);
 void subscriber&lt;T&gt;::<span class="fragment zoom-in highlight-current-green">remove</span>(weak_subscription);
-		            </pre>
-				</section>
-				<section>
-					<p><code>Coordination</code></p>
-					<pre class="highlight">
+	    </pre>
+	</section>
+	<section>
+		<p><code>Coordination</code></p>
+		<pre class="highlight">
 rxsc::scheduler::clock_type::time_point identity_one_worker::now();
 coordinator<identity_one_worker_coordinator> identity_one_worker::create_coordinator(composite_subscription);
-		            </pre>
-				</section>
-				<section>
-					<p><code>coordinator&lt;Coordinator&gt;</code></p>
-					<pre class="highlight">
+        </pre>
+	</section>
+	<section>
+		<p><code>coordinator&lt;Coordinator&gt;</code></p>
+		<pre class="highlight">
 rxsc::scheduler::clock_type::time_point coordinator&lt;Coordinator&gt;::now();
-		            </pre>
-				</section>
-				<section>
-					<h2><code>scheduler and worker</code></h2>
-					<pre class="highlight">
+        </pre>
+	</section>
+	<section>
+		<h2><code>scheduler and worker</code></h2>
+		<pre class="highlight">
 // scheduler
 std::chrono::steady_clock scheduler::<span class="fragment zoom-in highlight-current-green">clock_type</span>;
 
@@ -741,131 +797,138 @@ void worker::<span class="fragment zoom-in highlight-current-green">schedule_per
 time_point first, duration interval, 
 composite_subscription lifetime, // cancel Action
 Action /*void()*/);
-					</pre>
-				</section>
+		</pre>
+	</section>
 
-				<section id="time">
-					<section>
-						<h2>Recording and Scheduling Time</h2>
-						<p></p>
-					</section>
-					<section>
-						<h2>Now</h2>
-						<p>returns the current time</p>
-					</section>
-					<section>
-						<h2>Worker</h2>
-						<p>each worker represents the </p>
-					</section>
-				</section>
+	<section id="time">
+		<section>
+			<h2>Recording and Scheduling Time</h2>
+			<p></p>
+		</section>
+		<section>
+			<h2>Now</h2>
+			<p>returns the current time</p>
+		</section>
+		<section>
+			<h2>Worker</h2>
+			<p>each worker represents the </p>
+		</section>
+	</section>
 
-				<section id="asyncvconcurrent">
-					<section>
-						<h2>Asynchronous vs Concurrent</h2>
-						<h3>Concurrent</h3>
-						<p>
-							one piece of work that can be fractured into smaller indepenent pieces.
-						</p>
-						<h3>Asynchronous</h3>
-						<p>
-							many pieces of work that are dependent and distributed over time.
-						</p>
-					</section>
-					<section>
-						<h2>Concurrent</h2>
-						<p>
-							The goal is to use all available resources to finish a piece of work quickly
-						</p>
-					</section>
-					<section>
-						<h2>Asynchronous</h2>
-						<p>
-							The goal is to use minimal resources coordinating between many pieces of work
-						</p>
-					</section>
-				</section>
+	<section id="review">
+		<section>
+			<h2>Review of Algorithm sets in C++</h2>
+		</section>
+		<section>
+			<h2>Value</h2>
+			<p>
+				<strong>Represenation:</strong> <code class="highlight">[type] value;</code>
+			</p>
+			<br/>
+			<p class="fragment">
+				<strong>Algorithms:</strong> 
+				<br/>operators like <code class="highlight">+, -, *, /, &amp;, &amp;&amp;, |, ||, ~, ?:</code> and statements like <code class="highlight">switch, if</code>
+			</p>
+		</section>
+		<section>
+			<h2>Sequence</h2>
+			<p>
+				<strong>Represenation:</strong> <code class="highlight">iterator begin, iterator end</code>
+			</p>
+			<br/>
+			<p class="fragment">
+				<strong>Algorithms:</strong> <code class="highlight">std::copy_if, std::transform, std::accumulate, std::rotate, std::sort, std::find, std::search</code> 
+			</p>
+			<p class="fragment">
+				<br/>
+				These do not compose well because they use two values to represent a sequence. Thus..
+			</p>
+		</section>
+		<section>
+			<h2>Range</h2>
+			<p>
+				Ranges are under active development. There is more than one representation.
+				<br/>
+				<br/><strong>Represenation:</strong> <code class="highlight">range values;</code> 
+			</p>
+			<br/>
+			<p class="fragment">
+				<strong>Algorithms:</strong> <code class="highlight">std::copy_if, std::transform, std::accumulate, std::rotate, std::sort, std::find, std::search</code> 
+			</p>
+		</section>
+		<section>
+			<h2>Parallel Sequence (Concurrent)</h2>
+			<p>
+				<strong>Represenation:</strong> <code class="highlight">[integral] start, [integral] end</code> 
+			</p>
+			<br/>
+			<p class="fragment">
+				<strong>Algorithms:</strong> <code class="highlight">parallel_for, parallel_transform, parallel_reduce, parallel_sort</code>
+			</p>
+		</section>
+		<section>
+			<h2>Asynchronous Value</h2>
+			<p>
+				<strong>Represenation:</strong> 
+				<code class="highlight">std::promise&lt;T&gt; produces;</code>
+				<code class="highlight">std::future&lt;T&gt; consumes;</code>
+			</p>
+			<br/>
+			<p class="fragment">
+				<strong>Proposed Algorithms:</strong> <code class="highlight">then, when_all, when_any, map, bind, catch_error</code>
+			</p>
+		</section>
+		<section>
+			<h2>Asynchronous Sequence</h2>
+			<p>
+				This is under active development. This representation is the one that this presentation will cover.
+				<br/>
+				<br/><strong>Represenation:</strong> 
+				<code class="highlight">rxcpp::observable&lt;T&gt; produces;</code>
+				<code class="highlight">rxcpp::subscriber&lt;T&gt; consumes;</code>
+			</p>
+			<br/>
+			<p class="fragment">
+				<strong>Algorithms:</strong> <code class="highlight">filter, map, reduce, group_by, flat_map, concat, merge, skip, take, buffer, window, combine_latest</code>
+			</p>
+		</section>
+	</section>
 
-				<section id="review">
-					<section>
-						<h2>Review of Algorithm sets in C++</h2>
-					</section>
-					<section>
-						<h2>Value</h2>
-						<p>
-							<strong>Represenation:</strong> <code class="highlight">[type] value;</code>
-						</p>
-						<br/>
-						<p class="fragment">
-							<strong>Algorithms:</strong> 
-							<br/>operators like <code class="highlight">+, -, *, /, &amp;, &amp;&amp;, |, ||, ~, ?:</code> and statements like <code class="highlight">switch, if</code>
-						</p>
-					</section>
-					<section>
-						<h2>Sequence</h2>
-						<p>
-							<strong>Represenation:</strong> <code class="highlight">iterator begin, iterator end</code>
-						</p>
-						<br/>
-						<p class="fragment">
-							<strong>Algorithms:</strong> <code class="highlight">std::copy_if, std::transform, std::accumulate, std::rotate, std::sort, std::find, std::search</code> 
-						</p>
-						<p class="fragment">
-							<br/>
-							These do not compose well because they use two values to represent a sequence. Thus..
-						</p>
-					</section>
-					<section>
-						<h2>Range</h2>
-						<p>
-							Ranges are under active development. There is more than one representation.
-							<br/>
-							<br/><strong>Represenation:</strong> <code class="highlight">range values;</code> 
-						</p>
-						<br/>
-						<p class="fragment">
-							<strong>Algorithms:</strong> <code class="highlight">std::copy_if, std::transform, std::accumulate, std::rotate, std::sort, std::find, std::search</code> 
-						</p>
-					</section>
-					<section>
-						<h2>Parallel Sequence (Concurrent)</h2>
-						<p>
-							<strong>Represenation:</strong> <code class="highlight">[integral] start, [integral] end</code> 
-						</p>
-						<br/>
-						<p class="fragment">
-							<strong>Algorithms:</strong> <code class="highlight">parallel_for, parallel_transform, parallel_reduce, parallel_sort</code>
-						</p>
-					</section>
-					<section>
-						<h2>Asynchronous Value</h2>
-						<p>
-							<strong>Represenation:</strong> 
-							<code class="highlight">std::promise&lt;T&gt; produces;</code>
-							<code class="highlight">std::future&lt;T&gt; consumes;</code>
-						</p>
-						<br/>
-						<p class="fragment">
-							<strong>Proposed Algorithms:</strong> <code class="highlight">then, when_all, when_any, map, bind, catch_error</code>
-						</p>
-					</section>
-					<section>
-						<h2>Asynchronous Sequence</h2>
-						<p>
-							This is under active development. This representation is the one that this presentation will cover.
-							<br/>
-							<br/><strong>Represenation:</strong> 
-							<code class="highlight">rxcpp::observable&lt;T&gt; produces;</code>
-							<code class="highlight">rxcpp::subscriber&lt;T&gt; consumes;</code>
-						</p>
-						<br/>
-						<p class="fragment">
-							<strong>Algorithms:</strong> <code class="highlight">filter, map, reduce, group_by, flat_map, concat, merge, skip, take, buffer, window, combine_latest</code>
-						</p>
-					</section>
-				</section>
+	<section>
+		<h2>Promises</h2>
+	</section>
+	<section>
+		<h2>Promise Buffer/Queue</h2>
+	</section>
+	<section>
+		<h2>Subscribe to each value</h2>
+	</section>
+	<section>
+		<h2>Mouse clicks</h2>
+		<ul>
+			<li>miss clicks when not subscribed</li>
+			<li>delivering old clicks when not subscribed</li>
+		</ul>
+	</section>
+	<section>
+		<h2>Backpressure</h2>
+	</section>
+	<section>
+		<h2>Cancel</h2>
+	</section>
+	<section>
+		<h2>Lifetime</h2>
+		<p>async does not block the calling stack</p>
+	</section>
+	<section>
+		<h2>Algorithms</h2>
+		<p>take and skip are the same, while map and filter are different</p>
+	</section>
+</section>
 
 <!-- DEMO SLIDES -->
 
+<!--
 				<section>
 					<h2>Primitives for async programming</h2>
 					<p>
@@ -876,7 +939,6 @@ Action /*void()*/);
 					</aside>
 				</section>
 
-				<!-- Example of nested vertical slides -->
 				<section>
 					<section>
 						<h2>Vertical Slides</h2>
@@ -1166,6 +1228,7 @@ function linkify( selector ) {
 					<h1>THE END</h1>
 					<h3>BY Hakim El Hattab / hakim.se</h3>
 				</section>
+-->
 
 			</div>
 
